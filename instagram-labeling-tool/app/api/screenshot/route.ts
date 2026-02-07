@@ -83,12 +83,13 @@ async function getBrowser(): Promise<Browser> {
   browser = await puppeteer.launch({
     executablePath: chromePath,
     headless: true,
-    userDataDir: AUTH_DIR, // 使用持久化配置目录保存登录状态
+    userDataDir: AUTH_DIR,
     args: [
       "--no-sandbox",
       "--disable-setuid-sandbox",
       "--disable-dev-shm-usage",
       "--disable-gpu",
+      "--window-size=1280,800",
     ],
   });
 
@@ -128,12 +129,18 @@ export async function POST(request: NextRequest) {
 
       // 导航到页面
       await page.goto(url, {
-        waitUntil: "networkidle2",
+        waitUntil: "networkidle0",
         timeout: 30000,
       });
 
-      // 等待页面加载
-      await new Promise((resolve) => setTimeout(resolve, 2000));
+      // 等待页面完全渲染
+      await new Promise((resolve) => setTimeout(resolve, 3000));
+
+      // 滚动页面触发懒加载
+      await page.evaluate(() => {
+        window.scrollTo(0, 300);
+      });
+      await new Promise((resolve) => setTimeout(resolve, 1000));
 
       // 生成文件名
       const username = extractUsername(url);

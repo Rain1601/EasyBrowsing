@@ -6,9 +6,10 @@ import { ExcelExporter } from "@/components/ExcelExporter";
 import { BloggerList } from "@/components/BloggerList";
 import { LabelingPanel } from "@/components/LabelingPanel";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { LoginForm } from "@/components/LoginForm";
 import { Button } from "@/components/ui/button";
 import { Blogger, LabelingResult } from "@/types";
-import { Trash2 } from "lucide-react";
+import { Trash2, LogOut } from "lucide-react";
 
 const STORAGE_KEY = "instagram-labeling-session";
 
@@ -46,9 +47,26 @@ export default function Home() {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [results, setResults] = useState<Map<string, LabelingResult>>(new Map());
   const [isLoaded, setIsLoaded] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
+
+  // 检查登录状态
+  useEffect(() => {
+    async function checkAuth() {
+      try {
+        const response = await fetch("/api/login");
+        const data = await response.json();
+        setIsAuthenticated(data.authenticated);
+      } catch {
+        setIsAuthenticated(false);
+      }
+    }
+    checkAuth();
+  }, []);
 
   // 加载保存的会话数据
   useEffect(() => {
+    if (!isAuthenticated) return;
+
     const session = loadSession();
     if (session && session.bloggers.length > 0) {
       setBloggers(session.bloggers);
@@ -56,7 +74,7 @@ export default function Home() {
       setCurrentIndex(session.currentIndex);
     }
     setIsLoaded(true);
-  }, []);
+  }, [isAuthenticated]);
 
   // 自动保存会话数据
   useEffect(() => {
@@ -88,6 +106,15 @@ export default function Home() {
     }
   }, []);
 
+  const handleLogout = useCallback(async () => {
+    try {
+      await fetch("/api/login", { method: "DELETE" });
+      setIsAuthenticated(false);
+    } catch {
+      // 忽略错误
+    }
+  }, []);
+
   const handleSelectBlogger = useCallback((index: number) => {
     setCurrentIndex(index);
   }, []);
@@ -110,6 +137,20 @@ export default function Home() {
 
   const currentBlogger = bloggers[currentIndex] || null;
   const labeledCount = results.size;
+
+  // 加载中
+  if (isAuthenticated === null) {
+    return (
+      <div className="h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
+
+  // 未登录
+  if (!isAuthenticated) {
+    return <LoginForm onLoginSuccess={() => setIsAuthenticated(true)} />;
+  }
 
   return (
     <div className="h-screen flex flex-col">
@@ -138,6 +179,15 @@ export default function Home() {
             </Button>
           )}
           <ThemeToggle />
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={handleLogout}
+            title="退出登录"
+            className="text-muted-foreground"
+          >
+            <LogOut className="w-4 h-4" />
+          </Button>
         </div>
       </header>
 
