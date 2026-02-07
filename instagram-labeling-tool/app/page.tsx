@@ -1,22 +1,91 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { ExcelImporter } from "@/components/ExcelImporter";
 import { ExcelExporter } from "@/components/ExcelExporter";
 import { BloggerList } from "@/components/BloggerList";
 import { LabelingPanel } from "@/components/LabelingPanel";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { Button } from "@/components/ui/button";
 import { Blogger, LabelingResult } from "@/types";
+import { Trash2 } from "lucide-react";
+
+const STORAGE_KEY = "instagram-labeling-session";
+
+interface SessionData {
+  bloggers: Blogger[];
+  results: [string, LabelingResult][];
+  currentIndex: number;
+  savedAt: string;
+}
+
+function loadSession(): SessionData | null {
+  if (typeof window === "undefined") return null;
+  try {
+    const stored = localStorage.getItem(STORAGE_KEY);
+    if (stored) {
+      return JSON.parse(stored);
+    }
+  } catch {
+    // Ignore parse errors
+  }
+  return null;
+}
+
+function saveSession(data: SessionData): void {
+  if (typeof window === "undefined") return;
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+  } catch {
+    // Ignore storage errors
+  }
+}
 
 export default function Home() {
   const [bloggers, setBloggers] = useState<Blogger[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [results, setResults] = useState<Map<string, LabelingResult>>(new Map());
+  const [isLoaded, setIsLoaded] = useState(false);
+
+  // 加载保存的会话数据
+  useEffect(() => {
+    const session = loadSession();
+    if (session && session.bloggers.length > 0) {
+      setBloggers(session.bloggers);
+      setResults(new Map(session.results));
+      setCurrentIndex(session.currentIndex);
+    }
+    setIsLoaded(true);
+  }, []);
+
+  // 自动保存会话数据
+  useEffect(() => {
+    if (!isLoaded) return;
+
+    const sessionData: SessionData = {
+      bloggers,
+      results: Array.from(results.entries()),
+      currentIndex,
+      savedAt: new Date().toISOString(),
+    };
+    saveSession(sessionData);
+  }, [bloggers, results, currentIndex, isLoaded]);
 
   const handleImport = useCallback((importedBloggers: Blogger[]) => {
     setBloggers(importedBloggers);
     setCurrentIndex(0);
     setResults(new Map());
+    // 导入新数据时清除旧缓存
+    localStorage.removeItem(STORAGE_KEY);
+  }, []);
+
+  const handleClearSession = useCallback(() => {
+    if (window.confirm("确定要清除所有数据吗？此操作不可撤销。")) {
+      setBloggers([]);
+      setCurrentIndex(0);
+      setResults(new Map());
+      localStorage.removeItem(STORAGE_KEY);
+    }
   }, []);
 
   const handleSelectBlogger = useCallback((index: number) => {
@@ -57,6 +126,17 @@ export default function Home() {
         <div className="flex items-center gap-2">
           <ExcelImporter onImport={handleImport} />
           <ExcelExporter bloggers={bloggers} results={results} />
+          {bloggers.length > 0 && (
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={handleClearSession}
+              title="清除数据"
+              className="text-muted-foreground hover:text-destructive"
+            >
+              <Trash2 className="w-4 h-4" />
+            </Button>
+          )}
           <ThemeToggle />
         </div>
       </header>
