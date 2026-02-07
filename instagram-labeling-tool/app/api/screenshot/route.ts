@@ -15,6 +15,21 @@ if (!fs.existsSync(AUTH_DIR)) {
   fs.mkdirSync(AUTH_DIR, { recursive: true });
 }
 
+// 清理浏览器锁文件
+function cleanupBrowserLocks() {
+  const lockFiles = ["SingletonLock", "SingletonSocket", "SingletonCookie"];
+  for (const file of lockFiles) {
+    const lockPath = path.join(AUTH_DIR, file);
+    try {
+      if (fs.existsSync(lockPath)) {
+        fs.unlinkSync(lockPath);
+      }
+    } catch {
+      // 忽略错误
+    }
+  }
+}
+
 // 获取 Chrome 可执行路径
 function getChromePath(): string {
   const platform = os.platform();
@@ -59,6 +74,9 @@ async function getBrowser(): Promise<Browser> {
   if (browser && browser.connected) {
     return browser;
   }
+
+  // 清理可能存在的锁文件
+  cleanupBrowserLocks();
 
   const chromePath = getChromePath();
 

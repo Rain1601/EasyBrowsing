@@ -13,6 +13,7 @@ import {
   Loader2,
   RefreshCw,
   ImageOff,
+  LogIn,
 } from "lucide-react";
 import Image from "next/image";
 
@@ -55,6 +56,8 @@ export function LabelingPanel({
   const [screenshotPath, setScreenshotPath] = useState<string | null>(null);
   const [isCapturing, setIsCapturing] = useState(false);
   const [screenshotError, setScreenshotError] = useState<string | null>(null);
+  const [isOpeningLogin, setIsOpeningLogin] = useState(false);
+  const [loginMessage, setLoginMessage] = useState<string | null>(null);
 
   // 重置状态当 blogger 改变时
   useEffect(() => {
@@ -120,6 +123,32 @@ export function LabelingPanel({
       setScreenshotError(error instanceof Error ? error.message : "截图失败");
     } finally {
       setIsCapturing(false);
+    }
+  };
+
+  const handleOpenLogin = async () => {
+    setIsOpeningLogin(true);
+    setLoginMessage(null);
+
+    try {
+      const response = await fetch("/api/auth", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "open-login" }),
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        setLoginMessage(data.message);
+        setScreenshotError(null);
+      } else {
+        setLoginMessage(data.error || "打开登录窗口失败");
+      }
+    } catch (error) {
+      setLoginMessage(error instanceof Error ? error.message : "操作失败");
+    } finally {
+      setIsOpeningLogin(false);
     }
   };
 
@@ -252,27 +281,64 @@ export function LabelingPanel({
             <div className="absolute inset-0 flex flex-col items-center justify-center p-6 text-center">
               <ImageOff className="w-12 h-12 text-muted-foreground mb-4" />
               <p className="text-destructive mb-2">{screenshotError}</p>
-              <p className="text-sm text-muted-foreground mb-4">
-                可能需要先运行登录脚本设置 Instagram 登录状态
-              </p>
-              <code className="text-xs bg-muted p-2 rounded mb-4">
-                npm run instagram-login
-              </code>
-              <Button onClick={handleOpenInstagram} variant="outline">
-                <ExternalLink className="w-4 h-4 mr-2" />
-                手动打开页面
-              </Button>
+              {loginMessage ? (
+                <p className="text-sm text-green-600 dark:text-green-400 mb-4">
+                  {loginMessage}
+                </p>
+              ) : (
+                <p className="text-sm text-muted-foreground mb-4">
+                  可能需要先登录 Instagram
+                </p>
+              )}
+              <div className="flex gap-2">
+                <Button
+                  onClick={handleOpenLogin}
+                  variant="default"
+                  disabled={isOpeningLogin}
+                >
+                  {isOpeningLogin ? (
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  ) : (
+                    <LogIn className="w-4 h-4 mr-2" />
+                  )}
+                  {isOpeningLogin ? "打开中..." : "登录 Instagram"}
+                </Button>
+                <Button onClick={handleOpenInstagram} variant="outline">
+                  <ExternalLink className="w-4 h-4 mr-2" />
+                  手动打开
+                </Button>
+              </div>
             </div>
           )}
 
           {!screenshotPath && !isCapturing && !screenshotError && (
             <div className="absolute inset-0 flex flex-col items-center justify-center p-6 text-center">
               <Camera className="w-12 h-12 text-muted-foreground mb-4" />
-              <p className="text-muted-foreground mb-4">点击「截取页面」按钮获取截图</p>
-              <Button onClick={handleCaptureScreenshot} variant="outline">
-                <Camera className="w-4 h-4 mr-2" />
-                截取页面
-              </Button>
+              {loginMessage ? (
+                <p className="text-sm text-green-600 dark:text-green-400 mb-4">
+                  {loginMessage}
+                </p>
+              ) : (
+                <p className="text-muted-foreground mb-4">点击「截取页面」按钮获取截图</p>
+              )}
+              <div className="flex gap-2">
+                <Button onClick={handleCaptureScreenshot} variant="default">
+                  <Camera className="w-4 h-4 mr-2" />
+                  截取页面
+                </Button>
+                <Button
+                  onClick={handleOpenLogin}
+                  variant="outline"
+                  disabled={isOpeningLogin}
+                >
+                  {isOpeningLogin ? (
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  ) : (
+                    <LogIn className="w-4 h-4 mr-2" />
+                  )}
+                  登录
+                </Button>
+              </div>
             </div>
           )}
 
