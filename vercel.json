@@ -1,0 +1,6 @@
+{
+  "buildCommand": "cd instagram-labeling-tool && npm run build",
+  "installCommand": "cd instagram-labeling-tool && npm install",
+  "outputDirectory": "instagram-labeling-tool/.next",
+  "framework": "nextjs"
+}
