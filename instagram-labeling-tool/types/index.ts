@@ -6,7 +6,7 @@ export interface Blogger {
 export interface LabelingResult {
   bloggerId: string;
   matchesSheinStyle: boolean;
-  reason: string;
+  reasons: string[];  // 支持多选，存储标签文本
 }
 
 export interface ReasonOption {

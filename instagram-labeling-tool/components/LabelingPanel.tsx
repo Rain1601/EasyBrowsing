@@ -32,15 +32,15 @@ export function LabelingPanel({
   isLast,
 }: LabelingPanelProps) {
   const [matchesStyle, setMatchesStyle] = useState<string>("no");
-  const [reason, setReason] = useState<string>("");
+  const [reasons, setReasons] = useState<string[]>([]);
 
   useEffect(() => {
     if (existingResult) {
       setMatchesStyle(existingResult.matchesSheinStyle ? "yes" : "no");
-      setReason(existingResult.reason);
+      setReasons(existingResult.reasons || []);
     } else {
       setMatchesStyle("no");
-      setReason("");
+      setReasons([]);
     }
   }, [existingResult, blogger?.id]);
 
@@ -60,7 +60,7 @@ export function LabelingPanel({
     const result: LabelingResult = {
       bloggerId: blogger.id,
       matchesSheinStyle: matchesStyle === "yes",
-      reason,
+      reasons,
     };
     onSave(result);
     if (!isLast) {
@@ -107,7 +107,7 @@ export function LabelingPanel({
         {/* Reason selector */}
         <div className="space-y-3">
           <Label className="text-base font-medium">Reason</Label>
-          <ReasonSelector value={reason} onChange={setReason} />
+          <ReasonSelector value={reasons} onChange={setReasons} />
         </div>
       </div>
 

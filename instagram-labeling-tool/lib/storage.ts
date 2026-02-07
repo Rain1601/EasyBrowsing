@@ -52,3 +52,9 @@ export function isDuplicateReason(label: string): boolean {
     (r) => r.label.toLowerCase() === label.toLowerCase()
   );
 }
+
+export function removeCustomReason(label: string): void {
+  const customReasons = getCustomReasons();
+  const updated = customReasons.filter(r => r.label !== label);
+  saveCustomReasons(updated);
+}

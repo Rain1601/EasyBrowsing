@@ -71,7 +71,7 @@ export function exportToExcel(
     return {
       "Blogger Link": blogger.link,
       "Matches SHEIN Style": result ? (result.matchesSheinStyle ? "Yes" : "No") : "",
-      Reason: result?.reason || "",
+      Reason: result?.reasons?.join(", ") || "",
     };
   });
 
