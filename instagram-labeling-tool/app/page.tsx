@@ -5,6 +5,7 @@ import { ExcelImporter } from "@/components/ExcelImporter";
 import { ExcelExporter } from "@/components/ExcelExporter";
 import { BloggerList } from "@/components/BloggerList";
 import { LabelingPanel } from "@/components/LabelingPanel";
+import { ThemeToggle } from "@/components/ThemeToggle";
 import { Blogger, LabelingResult } from "@/types";
 
 export default function Home() {
@@ -56,6 +57,7 @@ export default function Home() {
         <div className="flex items-center gap-2">
           <ExcelImporter onImport={handleImport} />
           <ExcelExporter bloggers={bloggers} results={results} />
+          <ThemeToggle />
         </div>
       </header>
 
