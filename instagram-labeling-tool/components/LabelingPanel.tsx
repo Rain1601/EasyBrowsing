@@ -3,7 +3,6 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { ReasonSelector } from "@/components/ReasonSelector";
 import { Blogger, LabelingResult } from "@/types";
 import { ExternalLink, ChevronLeft, ChevronRight } from "lucide-react";
@@ -47,7 +46,7 @@ export function LabelingPanel({
   if (!blogger) {
     return (
       <div className="flex items-center justify-center h-full text-muted-foreground">
-        <p>Select a blogger from the list to start labeling</p>
+        <p>从左侧列表选择博主开始标注</p>
       </div>
     );
   }
@@ -74,39 +73,55 @@ export function LabelingPanel({
         {/* Current blogger info */}
         <div className="space-y-2">
           <p className="text-sm text-muted-foreground">
-            Blogger {currentIndex + 1} of {totalCount}
+            博主 {currentIndex + 1} / {totalCount}
           </p>
           <p className="text-sm font-medium break-all">{blogger.link}</p>
           <Button onClick={handleOpenInstagram} variant="outline">
             <ExternalLink className="w-4 h-4 mr-2" />
-            Open Instagram
+            打开 Instagram
           </Button>
         </div>
 
         {/* SHEIN style selector */}
         <div className="space-y-3">
           <Label className="text-base font-medium">
-            Does this blogger match SHEIN style?
+            是否符合 SHEIN 风格？
           </Label>
-          <RadioGroup value={matchesStyle} onValueChange={setMatchesStyle}>
-            <div className="flex items-center space-x-2">
-              <RadioGroupItem value="yes" id="yes" />
-              <Label htmlFor="yes" className="font-normal cursor-pointer">
-                Yes
-              </Label>
-            </div>
-            <div className="flex items-center space-x-2">
-              <RadioGroupItem value="no" id="no" />
-              <Label htmlFor="no" className="font-normal cursor-pointer">
-                No
-              </Label>
-            </div>
-          </RadioGroup>
+          <div className="flex gap-3">
+            <button
+              type="button"
+              onClick={() => setMatchesStyle("yes")}
+              className={`
+                flex-1 py-3 px-6 rounded-lg text-base font-medium
+                border-2 transition-all
+                ${matchesStyle === "yes"
+                  ? "bg-green-500/20 border-green-500 text-green-600 dark:text-green-400"
+                  : "bg-background hover:bg-muted border-border"
+                }
+              `}
+            >
+              ✓ 是
+            </button>
+            <button
+              type="button"
+              onClick={() => setMatchesStyle("no")}
+              className={`
+                flex-1 py-3 px-6 rounded-lg text-base font-medium
+                border-2 transition-all
+                ${matchesStyle === "no"
+                  ? "bg-red-500/20 border-red-500 text-red-600 dark:text-red-400"
+                  : "bg-background hover:bg-muted border-border"
+                }
+              `}
+            >
+              ✗ 否
+            </button>
+          </div>
         </div>
 
         {/* Reason selector */}
         <div className="space-y-3">
-          <Label className="text-base font-medium">Reason</Label>
+          <Label className="text-base font-medium">原因标签</Label>
           <ReasonSelector value={reasons} onChange={setReasons} />
         </div>
       </div>
@@ -119,10 +134,10 @@ export function LabelingPanel({
           disabled={isFirst}
         >
           <ChevronLeft className="w-4 h-4 mr-2" />
-          Previous
+          上一个
         </Button>
         <Button onClick={handleSaveAndNext}>
-          {isLast ? "Save" : "Save & Next"}
+          {isLast ? "保存" : "保存并继续"}
           {!isLast && <ChevronRight className="w-4 h-4 ml-2" />}
         </Button>
       </div>
