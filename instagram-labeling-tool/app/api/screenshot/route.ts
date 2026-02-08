@@ -159,7 +159,7 @@ export async function POST(request: NextRequest) {
       const results = [];
       for (const item of batch) {
         try {
-          const result = await takeScreenshot(item.url, item.id);
+          const result = await takeScreenshot(item.url);
           results.push({ ...result, id: item.id });
         } catch (error) {
           results.push({
