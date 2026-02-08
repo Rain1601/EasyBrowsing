@@ -4,7 +4,8 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Loader2, Lock } from "lucide-react";
+import { Loader2 } from "lucide-react";
+import Image from "next/image";
 
 interface LoginFormProps {
   onLoginSuccess: () => void;
@@ -49,10 +50,17 @@ export function LoginForm({ onLoginSuccess }: LoginFormProps) {
     <div className="min-h-screen flex items-center justify-center bg-background p-4">
       <div className="w-full max-w-sm space-y-6">
         <div className="text-center space-y-2">
-          <div className="mx-auto w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center">
-            <Lock className="w-6 h-6 text-primary" />
+          <div className="mx-auto w-20 h-20 rounded-full overflow-hidden">
+            <Image
+              src="/avatar.png"
+              alt="Logo"
+              width={80}
+              height={80}
+              className="w-full h-full object-cover"
+              priority
+            />
           </div>
-          <h1 className="text-2xl font-semibold">Instagram Blogger Labeling</h1>
+          <h1 className="text-2xl font-semibold">Blogger Labeling Tool</h1>
           <p className="text-muted-foreground">请登录以继续</p>
         </div>
 

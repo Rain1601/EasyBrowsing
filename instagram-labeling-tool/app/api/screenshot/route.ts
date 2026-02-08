@@ -4,6 +4,9 @@ import path from "path";
 import fs from "fs";
 import os from "os";
 
+// 检测是否在 Vercel 环境
+const IS_VERCEL = process.env.VERCEL === "1";
+
 // 不同平台的认证目录
 const AUTH_DIRS = {
   instagram: path.join(process.cwd(), ".chrome-profile-instagram"),
@@ -12,15 +15,17 @@ const AUTH_DIRS = {
 const SCREENSHOTS_DIR = path.join(process.cwd(), "public", "screenshots");
 const SCREENSHOT_META_FILE = path.join(process.cwd(), "screenshot-meta.json");
 
-// 确保目录存在
-if (!fs.existsSync(SCREENSHOTS_DIR)) {
-  fs.mkdirSync(SCREENSHOTS_DIR, { recursive: true });
-}
-Object.values(AUTH_DIRS).forEach((dir) => {
-  if (!fs.existsSync(dir)) {
-    fs.mkdirSync(dir, { recursive: true });
+// 确保目录存在（仅在非 Vercel 环境）
+if (!IS_VERCEL) {
+  if (!fs.existsSync(SCREENSHOTS_DIR)) {
+    fs.mkdirSync(SCREENSHOTS_DIR, { recursive: true });
   }
-});
+  Object.values(AUTH_DIRS).forEach((dir) => {
+    if (!fs.existsSync(dir)) {
+      fs.mkdirSync(dir, { recursive: true });
+    }
+  });
+}
 
 // 截图元数据管理
 interface ScreenshotMeta {
@@ -151,6 +156,14 @@ function detectPlatform(url: string): "instagram" | "youtube" {
 }
 
 export async function POST(request: NextRequest) {
+  // Vercel 环境不支持截图功能
+  if (IS_VERCEL) {
+    return NextResponse.json(
+      { error: "截图功能仅支持本地运行，Vercel 环境不支持" },
+      { status: 400 }
+    );
+  }
+
   try {
     const { url, batch } = await request.json();
 

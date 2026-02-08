@@ -4,6 +4,9 @@ import path from "path";
 import fs from "fs";
 import os from "os";
 
+// 检测是否在 Vercel 环境
+const IS_VERCEL = process.env.VERCEL === "1";
+
 // 不同平台的配置
 const PLATFORMS = {
   instagram: {
@@ -74,6 +77,20 @@ const loginBrowsers: { [key: string]: Browser | null } = {
 
 // 检查登录状态
 export async function GET(request: NextRequest) {
+  // Vercel 环境返回未登录状态
+  if (IS_VERCEL) {
+    return NextResponse.json({
+      authenticated: false,
+      hasProfile: false,
+      loginBrowserOpen: false,
+      allPlatforms: {
+        instagram: { authenticated: false, loginBrowserOpen: false },
+        youtube: { authenticated: false, loginBrowserOpen: false },
+      },
+      isVercel: true,
+    });
+  }
+
   const { searchParams } = new URL(request.url);
   const platform = (searchParams.get("platform") as Platform) || "instagram";
 
@@ -108,6 +125,14 @@ export async function GET(request: NextRequest) {
 
 // 启动/关闭登录浏览器
 export async function POST(request: NextRequest) {
+  // Vercel 环境不支持登录功能
+  if (IS_VERCEL) {
+    return NextResponse.json(
+      { error: "登录功能仅支持本地运行，Vercel 环境不支持" },
+      { status: 400 }
+    );
+  }
+
   try {
     const { action, platform = "instagram" } = await request.json();
 
