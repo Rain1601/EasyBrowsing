@@ -38,3 +38,6 @@ next-env.d.ts
 # screenshots and auth
 /public/screenshots/
 /.chrome-profile/
+/.chrome-profile-instagram/
+/.chrome-profile-youtube/
+/screenshot-meta.json

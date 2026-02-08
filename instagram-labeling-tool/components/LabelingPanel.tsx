@@ -16,6 +16,7 @@ import {
   LogIn,
 } from "lucide-react";
 import Image from "next/image";
+import { toast } from "sonner";
 
 interface LabelingPanelProps {
   blogger: Blogger | null;
@@ -27,6 +28,7 @@ interface LabelingPanelProps {
   onNext: () => void;
   isFirst: boolean;
   isLast: boolean;
+  onScreenshotUpdate?: () => void;
 }
 
 // 从 URL 提取用户名
@@ -50,6 +52,7 @@ export function LabelingPanel({
   onNext,
   isFirst,
   isLast,
+  onScreenshotUpdate,
 }: LabelingPanelProps) {
   const [matchesStyle, setMatchesStyle] = useState<string>("no");
   const [reasons, setReasons] = useState<string[]>([]);
@@ -58,6 +61,7 @@ export function LabelingPanel({
   const [screenshotError, setScreenshotError] = useState<string | null>(null);
   const [isOpeningLogin, setIsOpeningLogin] = useState(false);
   const [loginMessage, setLoginMessage] = useState<string | null>(null);
+  const [loginBrowserOpen, setLoginBrowserOpen] = useState(false);
 
   // 重置状态当 blogger 改变时
   useEffect(() => {
@@ -105,6 +109,9 @@ export function LabelingPanel({
     setIsCapturing(true);
     setScreenshotError(null);
 
+    const username = extractUsername(blogger.link);
+    toast.info(`正在截取 ${username} 的页面...`, { id: `screenshot-${username}` });
+
     try {
       const response = await fetch("/api/screenshot", {
         method: "POST",
@@ -116,11 +123,22 @@ export function LabelingPanel({
 
       if (data.success && data.path) {
         setScreenshotPath(data.path + `?t=${Date.now()}`);
+        onScreenshotUpdate?.();
+        toast.success(`${username} 截图完成`, { id: `screenshot-${username}` });
       } else {
         setScreenshotError(data.error || "截图失败");
+        toast.error(`${username} 截图失败`, {
+          id: `screenshot-${username}`,
+          description: data.error || "请检查网络或登录状态"
+        });
       }
     } catch (error) {
-      setScreenshotError(error instanceof Error ? error.message : "截图失败");
+      const errorMsg = error instanceof Error ? error.message : "截图失败";
+      setScreenshotError(errorMsg);
+      toast.error(`${username} 截图失败`, {
+        id: `screenshot-${username}`,
+        description: errorMsg
+      });
     } finally {
       setIsCapturing(false);
     }
@@ -140,7 +158,8 @@ export function LabelingPanel({
       const data = await response.json();
 
       if (data.success) {
-        setLoginMessage(data.message);
+        setLoginMessage("浏览器已打开，请登录后点击「完成登录」按钮");
+        setLoginBrowserOpen(true);
         setScreenshotError(null);
       } else {
         setLoginMessage(data.error || "打开登录窗口失败");
@@ -149,6 +168,20 @@ export function LabelingPanel({
       setLoginMessage(error instanceof Error ? error.message : "操作失败");
     } finally {
       setIsOpeningLogin(false);
+    }
+  };
+
+  const handleCloseLogin = async () => {
+    try {
+      await fetch("/api/auth", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "close-login" }),
+      });
+      setLoginBrowserOpen(false);
+      setLoginMessage("登录完成！现在可以截取页面了");
+    } catch {
+      // 忽略错误
     }
   };
 
@@ -291,18 +324,24 @@ export function LabelingPanel({
                 </p>
               )}
               <div className="flex gap-2">
-                <Button
-                  onClick={handleOpenLogin}
-                  variant="default"
-                  disabled={isOpeningLogin}
-                >
-                  {isOpeningLogin ? (
-                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                  ) : (
-                    <LogIn className="w-4 h-4 mr-2" />
-                  )}
-                  {isOpeningLogin ? "打开中..." : "登录 Instagram"}
-                </Button>
+                {loginBrowserOpen ? (
+                  <Button onClick={handleCloseLogin} variant="default">
+                    完成登录
+                  </Button>
+                ) : (
+                  <Button
+                    onClick={handleOpenLogin}
+                    variant="default"
+                    disabled={isOpeningLogin}
+                  >
+                    {isOpeningLogin ? (
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    ) : (
+                      <LogIn className="w-4 h-4 mr-2" />
+                    )}
+                    {isOpeningLogin ? "打开中..." : "登录 Instagram"}
+                  </Button>
+                )}
                 <Button onClick={handleOpenInstagram} variant="outline">
                   <ExternalLink className="w-4 h-4 mr-2" />
                   手动打开
@@ -326,18 +365,24 @@ export function LabelingPanel({
                   <Camera className="w-4 h-4 mr-2" />
                   截取页面
                 </Button>
-                <Button
-                  onClick={handleOpenLogin}
-                  variant="outline"
-                  disabled={isOpeningLogin}
-                >
-                  {isOpeningLogin ? (
-                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                  ) : (
-                    <LogIn className="w-4 h-4 mr-2" />
-                  )}
-                  登录
-                </Button>
+                {loginBrowserOpen ? (
+                  <Button onClick={handleCloseLogin} variant="outline">
+                    完成登录
+                  </Button>
+                ) : (
+                  <Button
+                    onClick={handleOpenLogin}
+                    variant="outline"
+                    disabled={isOpeningLogin}
+                  >
+                    {isOpeningLogin ? (
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    ) : (
+                      <LogIn className="w-4 h-4 mr-2" />
+                    )}
+                    登录
+                  </Button>
+                )}
               </div>
             </div>
           )}

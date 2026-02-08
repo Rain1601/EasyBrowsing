@@ -25,7 +25,10 @@ export function LoginForm({ onLoginSuccess }: LoginFormProps) {
       const response = await fetch("/api/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username, password }),
+        body: JSON.stringify({
+          username: username.trim(),
+          password: password.trim()
+        }),
       });
 
       const data = await response.json();

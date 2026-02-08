@@ -1,7 +1,20 @@
 export interface Blogger {
   id: string;
   link: string;
+  hasScreenshot?: boolean;
+  screenshotPath?: string;
+  screenshotTimestamp?: number;
 }
+
+export interface ScreenshotMeta {
+  [username: string]: {
+    timestamp: number;
+    path: string;
+    platform: string;
+  };
+}
+
+export type Platform = "instagram" | "youtube";
 
 export interface LabelingResult {
   bloggerId: string;

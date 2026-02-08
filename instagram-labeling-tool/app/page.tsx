@@ -7,8 +7,10 @@ import { BloggerList } from "@/components/BloggerList";
 import { LabelingPanel } from "@/components/LabelingPanel";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { LoginForm } from "@/components/LoginForm";
+import { PlatformLogin } from "@/components/PlatformLogin";
+import { BatchScreenshot } from "@/components/BatchScreenshot";
 import { Button } from "@/components/ui/button";
-import { Blogger, LabelingResult } from "@/types";
+import { Blogger, LabelingResult, ScreenshotMeta } from "@/types";
 import { Trash2, LogOut } from "lucide-react";
 
 const STORAGE_KEY = "instagram-labeling-session";
@@ -46,6 +48,7 @@ export default function Home() {
   const [bloggers, setBloggers] = useState<Blogger[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [results, setResults] = useState<Map<string, LabelingResult>>(new Map());
+  const [screenshotMeta, setScreenshotMeta] = useState<ScreenshotMeta>({});
   const [isLoaded, setIsLoaded] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
 
@@ -63,6 +66,19 @@ export default function Home() {
     checkAuth();
   }, []);
 
+  // 加载截图元数据
+  const loadScreenshotMeta = useCallback(async () => {
+    try {
+      const response = await fetch("/api/screenshot?all=true");
+      const data = await response.json();
+      if (data.screenshots) {
+        setScreenshotMeta(data.screenshots);
+      }
+    } catch {
+      // 忽略错误
+    }
+  }, []);
+
   // 加载保存的会话数据
   useEffect(() => {
     if (!isAuthenticated) return;
@@ -74,7 +90,10 @@ export default function Home() {
       setCurrentIndex(session.currentIndex);
     }
     setIsLoaded(true);
-  }, [isAuthenticated]);
+
+    // 加载截图元数据
+    loadScreenshotMeta();
+  }, [isAuthenticated, loadScreenshotMeta]);
 
   // 自动保存会话数据
   useEffect(() => {
@@ -135,6 +154,11 @@ export default function Home() {
     setCurrentIndex((prev) => Math.min(bloggers.length - 1, prev + 1));
   }, [bloggers.length]);
 
+  const handleScreenshotUpdate = useCallback(() => {
+    // 刷新截图元数据
+    loadScreenshotMeta();
+  }, [loadScreenshotMeta]);
+
   const currentBlogger = bloggers[currentIndex] || null;
   const labeledCount = results.size;
 
@@ -157,7 +181,7 @@ export default function Home() {
       {/* Header */}
       <header className="flex items-center justify-between px-6 py-4 border-b bg-background">
         <div className="flex items-center gap-4">
-          <h1 className="text-xl font-semibold">Instagram Blogger Labeling</h1>
+          <h1 className="text-xl font-semibold">Blogger Labeling Tool</h1>
           {bloggers.length > 0 && (
             <span className="text-sm text-muted-foreground">
               {labeledCount} / {bloggers.length} labeled
@@ -168,16 +192,24 @@ export default function Home() {
           <ExcelImporter onImport={handleImport} />
           <ExcelExporter bloggers={bloggers} results={results} />
           {bloggers.length > 0 && (
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={handleClearSession}
-              title="清除数据"
-              className="text-muted-foreground hover:text-destructive"
-            >
-              <Trash2 className="w-4 h-4" />
-            </Button>
+            <>
+              <BatchScreenshot
+                bloggers={bloggers}
+                screenshotMeta={screenshotMeta}
+                onComplete={handleScreenshotUpdate}
+              />
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={handleClearSession}
+                title="清除数据"
+                className="text-muted-foreground hover:text-destructive"
+              >
+                <Trash2 className="w-4 h-4" />
+              </Button>
+            </>
           )}
+          <PlatformLogin onLoginComplete={handleScreenshotUpdate} />
           <ThemeToggle />
           <Button
             variant="ghost"
@@ -199,6 +231,7 @@ export default function Home() {
             bloggers={bloggers}
             currentIndex={currentIndex}
             results={results}
+            screenshotMeta={screenshotMeta}
             onSelect={handleSelectBlogger}
           />
         </aside>
@@ -215,6 +248,7 @@ export default function Home() {
             onNext={handleNext}
             isFirst={currentIndex === 0}
             isLast={currentIndex === bloggers.length - 1}
+            onScreenshotUpdate={handleScreenshotUpdate}
           />
         </section>
       </main>
