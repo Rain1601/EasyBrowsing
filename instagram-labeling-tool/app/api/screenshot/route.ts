@@ -188,7 +188,7 @@ export async function POST(request: NextRequest) {
   }
 }
 
-async function takeScreenshot(url: string, id?: string) {
+async function takeScreenshot(url: string) {
   const platform = detectPlatform(url);
   const browserInstance = await getBrowser(platform);
   const page = await browserInstance.newPage();
