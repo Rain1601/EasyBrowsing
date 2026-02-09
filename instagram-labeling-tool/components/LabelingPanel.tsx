@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { ReasonSelector } from "@/components/ReasonSelector";
@@ -185,7 +185,8 @@ export function LabelingPanel({
     }
   };
 
-  const handleSaveAndNext = () => {
+  const handleSaveAndNext = useCallback(() => {
+    if (!blogger) return;
     const result: LabelingResult = {
       bloggerId: blogger.id,
       matchesSheinStyle: matchesStyle === "yes",
@@ -195,7 +196,20 @@ export function LabelingPanel({
     if (!isLast) {
       onNext();
     }
-  };
+  }, [blogger, matchesStyle, reasons, onSave, isLast, onNext]);
+
+  // 快捷键: Command+Enter 保存并继续
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === "Enter") {
+        e.preventDefault();
+        handleSaveAndNext();
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [handleSaveAndNext]);
 
   return (
     <div className="h-full flex">
@@ -279,7 +293,7 @@ export function LabelingPanel({
             <ChevronLeft className="w-4 h-4 mr-2" />
             上一个
           </Button>
-          <Button onClick={handleSaveAndNext}>
+          <Button onClick={handleSaveAndNext} title="⌘+Enter">
             {isLast ? "保存" : "保存并继续"}
             {!isLast && <ChevronRight className="w-4 h-4 ml-2" />}
           </Button>
