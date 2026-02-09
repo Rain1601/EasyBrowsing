@@ -246,18 +246,18 @@ export function LabelingPanel({
           </div>
 
           {/* SHEIN 风格选择 */}
-          <div className="space-y-3">
+          <div className="space-y-2">
             <Label className="text-base font-medium">是否符合 SHEIN 风格？</Label>
             <div className="flex gap-1">
               <button
                 type="button"
                 onClick={() => setMatchesStyle("yes")}
                 className={`
-                  flex-1 py-3 px-6 rounded-lg text-base font-medium
-                  border-2 transition-all
+                  flex-1 py-2 px-4 rounded-md text-sm font-medium
+                  border transition-all
                   ${
                     matchesStyle === "yes"
-                      ? "bg-sky-500/20 border-sky-500 text-sky-600 dark:bg-green-500/20 dark:border-green-500 dark:text-green-400"
+                      ? "bg-sky-100 border-sky-400 text-sky-700 dark:bg-green-500/20 dark:border-green-500 dark:text-green-400"
                       : "bg-background hover:bg-muted border-border"
                   }
                 `}
@@ -268,11 +268,11 @@ export function LabelingPanel({
                 type="button"
                 onClick={() => setMatchesStyle("no")}
                 className={`
-                  flex-1 py-3 px-6 rounded-lg text-base font-medium
-                  border-2 transition-all
+                  flex-1 py-2 px-4 rounded-md text-sm font-medium
+                  border transition-all
                   ${
                     matchesStyle === "no"
-                      ? "bg-sky-500/20 border-sky-500 text-sky-600 dark:bg-red-500/20 dark:border-red-500 dark:text-red-400"
+                      ? "bg-sky-100 border-sky-400 text-sky-700 dark:bg-red-500/20 dark:border-red-500 dark:text-red-400"
                       : "bg-background hover:bg-muted border-border"
                   }
                 `}
