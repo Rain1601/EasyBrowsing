@@ -50,13 +50,13 @@ export function LoginForm({ onLoginSuccess }: LoginFormProps) {
     <div className="min-h-screen flex items-center justify-center bg-background p-4">
       <div className="w-full max-w-sm space-y-6">
         <div className="text-center space-y-2">
-          <div className="mx-auto w-20 h-20 rounded-full overflow-hidden">
+          <div className="mx-auto w-20 h-20 rounded-full overflow-hidden border-0">
             <Image
               src="/avatar.png"
               alt="Logo"
               width={80}
               height={80}
-              className="w-full h-full object-cover"
+              className="w-full h-full object-cover border-0"
               priority
             />
           </div>
