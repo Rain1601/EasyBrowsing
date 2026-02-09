@@ -102,6 +102,7 @@ export function LabelingPanel({
       reasons,
     };
     onSave(result);
+    toast.success("保存成功", { duration: 1000, position: "top-center" });
     if (!isLast) {
       onNext();
     }
