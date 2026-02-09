@@ -93,6 +93,33 @@ export function LabelingPanel({
     }
   }, [existingResult, blogger?.id, blogger?.link, blogger]);
 
+  // 保存并继续 - 必须在早期返回之前定义
+  const handleSaveAndNext = useCallback(() => {
+    if (!blogger) return;
+    const result: LabelingResult = {
+      bloggerId: blogger.id,
+      matchesSheinStyle: matchesStyle === "yes",
+      reasons,
+    };
+    onSave(result);
+    if (!isLast) {
+      onNext();
+    }
+  }, [blogger, matchesStyle, reasons, onSave, isLast, onNext]);
+
+  // 快捷键: Command+Enter 保存并继续
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === "Enter") {
+        e.preventDefault();
+        handleSaveAndNext();
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [handleSaveAndNext]);
+
   if (!blogger) {
     return (
       <div className="flex items-center justify-center h-full text-muted-foreground">
@@ -184,32 +211,6 @@ export function LabelingPanel({
       // 忽略错误
     }
   };
-
-  const handleSaveAndNext = useCallback(() => {
-    if (!blogger) return;
-    const result: LabelingResult = {
-      bloggerId: blogger.id,
-      matchesSheinStyle: matchesStyle === "yes",
-      reasons,
-    };
-    onSave(result);
-    if (!isLast) {
-      onNext();
-    }
-  }, [blogger, matchesStyle, reasons, onSave, isLast, onNext]);
-
-  // 快捷键: Command+Enter 保存并继续
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if ((e.metaKey || e.ctrlKey) && e.key === "Enter") {
-        e.preventDefault();
-        handleSaveAndNext();
-      }
-    };
-
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [handleSaveAndNext]);
 
   return (
     <div className="h-full flex">
