@@ -9,6 +9,7 @@ import { ThemeToggle } from "@/components/ThemeToggle";
 import { LoginForm } from "@/components/LoginForm";
 import { PlatformLogin } from "@/components/PlatformLogin";
 import { BatchScreenshot } from "@/components/BatchScreenshot";
+import { BatchLabeling } from "@/components/BatchLabeling";
 import { Button } from "@/components/ui/button";
 import { Blogger, LabelingResult, ScreenshotMeta } from "@/types";
 import { Trash2, LogOut } from "lucide-react";
@@ -159,6 +160,16 @@ export default function Home() {
     loadScreenshotMeta();
   }, [loadScreenshotMeta]);
 
+  const handleBatchLabel = useCallback((newResults: LabelingResult[]) => {
+    setResults((prev) => {
+      const updated = new Map(prev);
+      for (const result of newResults) {
+        updated.set(result.bloggerId, result);
+      }
+      return updated;
+    });
+  }, []);
+
   const currentBlogger = bloggers[currentIndex] || null;
   const labeledCount = results.size;
 
@@ -193,6 +204,11 @@ export default function Home() {
           <ExcelExporter bloggers={bloggers} results={results} />
           {bloggers.length > 0 && (
             <>
+              <BatchLabeling
+                bloggers={bloggers}
+                results={results}
+                onBatchLabel={handleBatchLabel}
+              />
               <BatchScreenshot
                 bloggers={bloggers}
                 screenshotMeta={screenshotMeta}
