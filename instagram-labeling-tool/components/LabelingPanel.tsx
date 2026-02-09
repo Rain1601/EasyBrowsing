@@ -248,7 +248,7 @@ export function LabelingPanel({
           {/* SHEIN 风格选择 */}
           <div className="space-y-3">
             <Label className="text-base font-medium">是否符合 SHEIN 风格？</Label>
-            <div className="flex gap-3">
+            <div className="flex gap-1">
               <button
                 type="button"
                 onClick={() => setMatchesStyle("yes")}
@@ -257,7 +257,7 @@ export function LabelingPanel({
                   border-2 transition-all
                   ${
                     matchesStyle === "yes"
-                      ? "bg-green-500/20 border-green-500 text-green-600 dark:text-green-400"
+                      ? "bg-sky-500/20 border-sky-500 text-sky-600 dark:bg-green-500/20 dark:border-green-500 dark:text-green-400"
                       : "bg-background hover:bg-muted border-border"
                   }
                 `}
@@ -272,7 +272,7 @@ export function LabelingPanel({
                   border-2 transition-all
                   ${
                     matchesStyle === "no"
-                      ? "bg-red-500/20 border-red-500 text-red-600 dark:text-red-400"
+                      ? "bg-sky-500/20 border-sky-500 text-sky-600 dark:bg-red-500/20 dark:border-red-500 dark:text-red-400"
                       : "bg-background hover:bg-muted border-border"
                   }
                 `}
